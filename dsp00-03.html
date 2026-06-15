@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>現在の申込状況</title>
+
+<style>
+
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 15px;
+    background-color: #f5f5f5;
+    background-image: url('image/back04.png');
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.section {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+label {
+    font-weight: bold;
+}
+
+select {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+/* =====================
+   テーブル共通スタイル
+   ===================== */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    margin-top: 10px;
+}
+
+.data-table th {
+    background-color: #4a6fa5;
+    color: white;
+    padding: 10px 8px;
+    text-align: center;
+    border: 1px solid #ccc;
+}
+
+.data-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+/* 合計行のスタイル */
+.data-table tr.total-row td {
+    background-color: #f0f4ff;
+    font-weight: bold;
+}
+
+/* 空白行のスタイル */
+.data-table tr.empty-row td {
+    background-color: #fafafa;
+    height: 12px;
+}
+
+/* 名前・近況列は左寄せ */
+.data-table td.left {
+    text-align: left;
+}
+
+/* 参加区分の色分け */
+.tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+}
+.tag-both   { background-color: #d4edda; color: #155724; }
+.tag-first  { background-color: #fff3cd; color: #856404; }
+.tag-absent { background-color: #f8d7da; color: #721c24; }
+
+/* ローディング・エラー */
+.loading {
+    text-align: center;
+    padding: 30px;
+    color: #888;
+    font-size: 16px;
+}
+
+.error-msg {
+    text-align: center;
+    padding: 20px;
+    color: #c00;
+    font-size: 15px;
+}
+
+.note {
+    font-size: 14px;
+    color: #666666;
+    margin-top: 10px;
+}
+
+.last-updated {
+    font-size: 13px;
+    color: #888;
+    text-align: right;
+    margin-top: 6px;
+}
+
+/* 戻るボタン */
+.back-button-wrapper {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.back-button {
+    display: inline-block;
+    padding: 12px 40px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #555555;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.back-button:hover {
+    background-color: #333333;
+}
+
+/* スマホ対応 */
+@media screen and (max-width: 600px) {
+    .data-table {
+        font-size: 12px;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 6px 4px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>2026a 現在の申込状況</h1>
+
+    <!-- 全体集計 -->
+    <div class="section">
+        <h2>全体集計</h2>
+        <div id="sumdContainer">
+            <div class="loading">読み込み中...</div>
+        </div>
+        <div class="last-updated" id="sumdUpdated"></div>
+    </div>
+
+    <!-- 組別表示 -->
+    <div class="section">
+        <h2>組別申込状況</h2>
+
+        <label for="classSelect">表示する組を選択してください。</label>
+
+        <select id="classSelect">
+            <option value="01">1組</option>
+            <option value="02">2組</option>
+            <option value="03">3組</option>
+            <option value="04">4組</option>
+            <option value="05">5組</option>
+            <option value="06">6組</option>
+            <option value="07">7組</option>
+            <option value="08">8組</option>
+            <option value="09">9組</option>
+            <option value="10">10組</option>
+        </select>
+
+        <div id="classContainer">
+            <div class="loading">読み込み中...</div>
+        </div>
+        <div class="last-updated" id="classUpdated"></div>
+
+        <div class="note">※ 内容は自動更新されます（約10分ごと）</div>
+    </div>
+
+    <!-- 戻るボタン -->
+    <div class="back-button-wrapper">
+        <button class="back-button" onclick="history.back()">← 戻る</button>
+    </div>
+
+</div>
+
+<script>
+
+// =============================================
+// ★ GAS WebアプリのURLをここに設定してください
+// デプロイ後に発行されるURLを貼り付けてください
+// =============================================
+// =========================
+// 20260526　機能追加
+// 提供モード
+// 1 : 第一段階提供
+// 2 : 第二段階提供
+// =========================
+ const PROV_MODE = 2;
+
+let GAS_URL = "";   
+if (PROV_MODE ==1 ) { 
+    GAS_URL = "https://script.google.com/macros/s/AKfycbz1NaMNVHPPgXHd5ciFxTkViFyiCuHCyfAJULyLFS02VrR18kijgUsWpievnD3cGDey/exec";
+}
+else if( PROV_MODE==2 ){
+    GAS_URL = "https://script.google.com/macros/s/AKfycbwjck3KE7X_OJb1BaJV7UjthkGRCpBLKxQQ0dyEU-UVzwZ4wMBaUUPNnN6ycCB_xcQA/exec";
+}
+
+    // 自動リロード間隔（10 分）
+const RELOAD_INTERVAL_MS = 10 * 60 * 1000;
+
+// =============================================
+// 現在時刻を「HH:MM:SS」形式で返す
+// =============================================
+function nowStr() {
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    const ss = String(d.getSeconds()).padStart(2, "0");
+    return hh + ":" + mm + ":" + ss;
+}
+
+// =============================================
+// GAS API からデータを取得
+// =============================================
+async function fetchSheet(sheetName) {
+    const url = GAS_URL + "?sheet=" + sheetName + "&t=" + Date.now();
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("HTTP error: " + res.status);
+    return await res.json();
+}
+
+// =============================================
+// 参加区分タグHTMLを返す
+// =============================================
+function participationTag(value) {
+    if (!value) return "";
+    const v = String(value);
+    if (v.includes("1，2次会") || v.includes("1,2次会") || v.includes("１，２次会")) {
+        return '<span class="tag tag-both">' + v + '</span>';
+    } else if (v.includes("1次会のみ") || v.includes("１次会のみ")) {
+        return '<span class="tag tag-first">' + v + '</span>';
+    } else if (v.includes("不参加")) {
+        return '<span class="tag tag-absent">' + v + '</span>';
+    }
+    return v;
+}
+
+// =============================================
+// sumd（全体集計）テーブルを描画
+// =============================================
+async function loadSumd() {
+    const container = document.getElementById("sumdContainer");
+    try {
+        const result = await fetchSheet("sumd");
+        const rows = result.data;
+
+        if (!rows || rows.length === 0) {
+            container.innerHTML = '<div class="error-msg">データがありません</div>';
+            return;
+        }
+
+        let html = '<table class="data-table">';
+        let tbodyStarted = false;
+
+        rows.forEach(function(row, i) {
+
+            // 全セルが空白の行
+            const isEmpty = row.every(function(cell) {
+                return cell === "" || cell === null;
+            });
+            if (isEmpty) {
+                if (tbodyStarted) {
+                    html += '<tr class="empty-row"><td colspan="4"></td></tr>';
+                }
+                return;
+            }
+
+            // 1行目はヘッダー
+            if (i === 0) {
+                html += "<thead><tr>";
+                row.forEach(function(cell) {
+                    html += "<th>" + (cell != null && cell !== "" ? cell : "　") + "</th>";
+                });
+                html += "</tr></thead><tbody>";
+                tbodyStarted = true;
+                return;
+            }
+
+            // 合計行の判定（A列に「合計」「計」を含む）
+            const isTotal = String(row[0]).includes("合計") || String(row[0]).includes("計");
+            const rowClass = isTotal ? ' class="total-row"' : "";
+
+            html += "<tr" + rowClass + ">";
+            row.forEach(function(cell) {
+                html += "<td>" + (cell != null && cell !== "" ? cell : "") + "</td>";
+            });
+            html += "</tr>";
+        });
+
+        if (tbodyStarted) html += "</tbody>";
+        html += "</table>";
+
+        container.innerHTML = html;
+        document.getElementById("sumdUpdated").textContent = "最終更新: " + nowStr();
+
+    } catch (err) {
+        container.innerHTML = '<div class="error-msg">読み込みエラー: ' + err.message + '</div>';
+    }
+}
+
+// =============================================
+// class01～class10 テーブルを描画
+// 列：A=受付番号 B=タイムスタンプ C=組 D=名前 E=参加区分 F=近況
+// =============================================
+async function loadClass() {
+    const no = document.getElementById("classSelect").value;
+    const sheetName = "class" + no;
+    const container = document.getElementById("classContainer");
+
+    container.innerHTML = '<div class="loading">読み込み中...</div>';
+
+    try {
+        const result = await fetchSheet(sheetName);
+        const rows = result.data;
+
+        if (!rows || rows.length === 0) {
+            container.innerHTML = '<div class="error-msg">データがありません</div>';
+            return;
+        }
+
+        const headers = rows[0];
+        const dataRows = rows.slice(1).filter(function(row) {
+            return row.some(function(cell) { return cell !== "" && cell !== null; });
+        });
+
+        let html = '<table class="data-table"><thead><tr>';
+        headers.forEach(function(h) {
+            html += "<th>" + (h != null && h !== "" ? h : "") + "</th>";
+        });
+        html += "</tr></thead><tbody>";
+
+        dataRows.forEach(function(row) {
+            html += "<tr>";
+            row.forEach(function(cell, colIndex) {
+                // D列(index=3):名前、F列(index=5):近況 → 左寄せ
+                const isLeft = (colIndex === 3 || colIndex === 5);
+                
+               // B列(index=1): タイムスタンプをJST変換
+                if (colIndex === 1) {
+                
+                    let jst = "";
+                
+                    if (cell) {
+                
+                        const dt = new Date(cell);
+                
+                        jst =
+                            dt.getFullYear() + "/" +
+                            String(dt.getMonth() + 1).padStart(2, "0") + "/" +
+                            String(dt.getDate()).padStart(2, "0") + " " +
+                            String(dt.getHours()).padStart(2, "0") + ":" +
+                            String(dt.getMinutes()).padStart(2, "0");
+                    }
+                
+                    html += "<td>" + jst + "</td>";
+                    return;
+                }                
+               // E列(index=4):参加区分 → タグ表示
+                if (colIndex === 4) {
+                    html += "<td>" + participationTag(cell) + "</td>";
+                } else {
+                    html += '<td' + (isLeft ? ' class="left"' : "") + '>'
+                          + (cell != null && cell !== "" ? cell : "")
+                          + "</td>";
+                }
+            }
+         );
+            html += "</tr>";
+        });
+
+        html += "</tbody></table>";
+        container.innerHTML = html;
+        document.getElementById("classUpdated").textContent = "最終更新: " + nowStr();
+
+    } catch (err) {
+        container.innerHTML = '<div class="error-msg">読み込みエラー: ' + err.message + '</div>';
+    }
+}
+
+// =============================================
+// 初期表示
+// =============================================
+loadSumd();
+loadClass();
+
+// 組変更時
+document.getElementById("classSelect").addEventListener("change", loadClass);
+
+// =============================================
+// 自動リロード（10分ごと）
+// =============================================
+setInterval(function() {
+    loadSumd();
+    loadClass();
+}, RELOAD_INTERVAL_MS);
+
+</script>
+
+</body>
+</html>

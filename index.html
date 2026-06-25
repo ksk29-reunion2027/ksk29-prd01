@@ -162,48 +162,111 @@
           text + "<br>";
       }
        
-
-       
+　    // 0:通常運用  1:メンテナンス中
+            const SYSTEM = 1;
+ 
        // "xxx" の SHA-256 ハッシュ値
       const PASSWORD_HASH = "8cf48579590198347877319666b32e77a4c862a89ad57bf8734f9d991f30897c";
       //
       // SHA-256 生成
       //
-        async function sha256(text) {
-      
+      async function sha256(text) {
+
         const msgUint8 = new TextEncoder().encode(text);
+
         const hashBuffer =
-          await crypto.subtle.digest('SHA-256', msgUint8);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
+            await crypto.subtle.digest(
+                'SHA-256',
+                msgUint8
+            );
+
+        const hashArray =
+            Array.from(
+                new Uint8Array(hashBuffer)
+            );
+
         return hashArray
-          .map(b => b.toString(16).padStart(2, '0'))
-          .join('');
-      }
+            .map(
+                b => b.toString(16).padStart(2, '0')
+            )
+            .join('');
+        }
+
+        
       //
       // パスワードチェック
       // 
-       async function checkPassword() {
-
-        const pw = document.getElementById("password").value;
-        const message = document.getElementById("message"); 
-        const hash = await sha256(pw);
-
  // dbg("入力値pw=" + pw  + "/");
  // dbg("入力値hash=" + hash);         
-          
-         if(  pw == "" ) { 
-                message.innerHTML = "パスワードを入力してください!";
-                message.style.color = "red";
-         }else if(hash === PASSWORD_HASH){
-          // 認証OK時,次画面へ移動
-            sessionStorage.setItem("auth", "ok");
-            window.location.href = "home00.html";
-        } else {
-                message.innerHTML = "パスワードが違います!";
-                message.style.color = "red";
-        }
-      }
+    async function checkPassword() {
+        const message =
+            document.getElementById("message");
+  // -------------------------
+  // メンテナンス中
+  // -------------------------
+          if (SYSTEM === 1) {
 
+            message.innerHTML =
+                "現在システムメンテナンス中です。しばらくしてから再度アクセスしてください。";
+            message.style.color = "red";
+            return;
+        }
+        const pw =
+            document.getElementById(
+                "password"
+            ).value;
+        const hash =
+            await sha256(pw);
+        if (pw == "") {
+            message.innerHTML =
+                "パスワードを入力してください!";
+            message.style.color =
+                "red";
+        } else if (
+            hash === PASSWORD_HASH
+        ) {
+
+            sessionStorage.setItem(
+                "auth",
+                "ok"
+            );
+
+            window.location.href =
+                "home00.html";
+        } else {
+            message.innerHTML =
+                "パスワードが違います!";
+            message.style.color =
+                "red";
+        }
+    }
+
+ //
+ // 初期表示処理
+ //
+    window.onload = function() {
+        if (SYSTEM === 1) {
+            document.getElementById(
+                "message"
+            ).innerHTML =
+                "現在システムメンテナンス中です。";
+            document.getElementById(
+                "message"
+            ).style.color = "red";
+            document.getElementById(
+                "password"
+            ).disabled = true;
+            document.getElementById(
+                "password"
+            ).placeholder =
+                "メンテナンス中";
+            document.querySelector(
+                "button"
+            ).disabled = true;
+        }
+    };
+
+    
        
       /*  -----------20260521 コメントアウト  */
      </script>

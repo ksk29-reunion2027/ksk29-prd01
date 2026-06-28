@@ -99,7 +99,26 @@
             // 第一段階提供
             // =========================
             if(PROV_MODE === 1) {
+                // 受付期限チェック（2026年9月1日以降は終了） new Date(2026, 8, 1)  
+                // 受付期限チェック（2026年9月12日以降は終了）new Date(2026, 8, 12)
+                const today = new Date();
+                const deadline = new Date(2026, 5, 28); // 月は0始まり：8=9月
+                    if (today >= deadline) {
+        
+                    // 受付期限終了
+                    menu02.removeAttribute("href");
+                    menu02.style.cursor = "default";
+                    menu02.style.backgroundColor = "#aaa";
+                    menu02.style.pointerEvents = "none";
+        
+                    menu02.innerHTML = `
+                        ２．同窓会への参加　仮申し込み<br>
+                        受付期限が終了しました。
+                    `;
+                    return;
+                }
 
+      // 受付期間中（8月31日以前）
                 menu02.href =
                     FORM_URL_STAGE1;
 

@@ -234,7 +234,8 @@ if (PROV_MODE ==1 ) {
   
 }
 else if( PROV_MODE==2 ){
-    GAS_URL = "https://script.google.com/macros/s/AKfycbwjck3KE7X_OJb1BaJV7UjthkGRCpBLKxQQ0dyEU-UVzwZ4wMBaUUPNnN6ycCB_xcQA/exec";
+　     //GAS_URL = "https://script.google.com/macros/s/AKfycbwjck3KE7X_OJb1BaJV7UjthkGRCpBLKxQQ0dyEU-UVzwZ4wMBaUUPNnN6ycCB_xcQA/exec";
+    GAS_URL = "https://script.google.com/macros/s/AKfycbx4-yRKB6FyMjp2a1IQ7r89ZsB9Km6KF5cG9ruzk8kzWmS-QB9cAaXXXEiIUgd00wjC/exec";
 }
 
     // 自動リロード間隔（10 分）
@@ -342,7 +343,7 @@ async function loadSumd() {
 
 // =============================================
 // class01～class10 テーブルを描画
-// 列：A=受付番号 B=タイムスタンプ C=組 D=名前 E=参加区分 F=近況
+// 列：A=受付番号 B=タイムスタンプ C=組 D=名前 E=参加区分 F=近況　G=入金状況
 // =============================================
 async function loadClass() {
     const no = document.getElementById("classSelect").value;

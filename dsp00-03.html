@@ -161,6 +161,29 @@ select {
     }
 }
 
+/* 入金状況の凡例 */
+.payment-legend {
+text-align: right;
+font-size: 14px;
+line-height: 1.8;
+margin-top: 5px;
+margin-bottom: 10px;
+color: #333333;
+}
+
+.payment-legend .legend-label {
+display: inline-block;
+min-width: 110px;
+text-align: left;
+font-weight: bold;
+}
+
+.payment-legend .legend-email {
+display: inline-block;
+margin-right: 0;
+}
+/* -------------------------  */
+    
 </style>
 </head>
 
@@ -201,6 +224,24 @@ select {
         <div id="classContainer">
             <div class="loading">読み込み中...</div>
         </div>
+ 
+<!-- 入金状況の凡例 -->
+        <div class="payment-legend"> 
+            <div> 
+                <span class="legend-label">入金確認済</span>：okです。
+            </div> 
+         <div> 
+             <span class="legend-label">入金待ち</span>：お待ちしてます。 
+         </div>
+         <div> 
+             <span class="legend-label">事務局へ連絡</span>：確認事項あり、以下にメールを！ </div> 
+          <div> 
+              <span class="legend-email">toda.ksk29@outloook.jp</span> 
+          </div> 
+        </div>        
+       
+        
+        
         <div class="last-updated" id="classUpdated"></div>
 
         <div class="note">※ 内容は自動更新されます（約10分ごと）</div>

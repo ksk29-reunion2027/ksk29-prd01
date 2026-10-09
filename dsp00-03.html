@@ -163,9 +163,9 @@ select {
 
 /* 入金状況の凡例 */
 .payment-legend {
-text-align: right;
+text-align: left;
 font-size: 14px;
-line-height: 1.8;
+line-height: 1.4;
 margin-top: 5px;
 margin-bottom: 10px;
 color: #333333;
@@ -394,6 +394,7 @@ async function loadClass() {
 
         /*  let html = '<table class="data-table"><thead><tr>'; *  20261010  */
        let html = '<div class="payment-legend">';
+            html += '<div><span class="legend-label">【入金状況　凡例】</span></div>';
             html += '<div><span class="legend-label">入金確認済</span>：okです。</div>';
             html += '<div><span class="legend-label">入金待ち</span>：お待ちしてます。</div>';
             html += '<div><span class="legend-label">事務局へ連絡</span>：確認事項あり、以下にメールを！</div>'; 
